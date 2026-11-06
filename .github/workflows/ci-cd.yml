@@ -1,0 +1,81 @@
+name: CI/CD — GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: Проверка сайта
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить исходный код
+        uses: actions/checkout@v4
+      - name: Проверить структуру и JavaScript
+        run: |
+          test -s public/index.html
+          test -s public/style.css
+          test -s public/script.js
+          node --check public/script.js
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class SiteCheck(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.html_lang = False
+                  self.title = False
+                  self.heading = False
+                  self.stylesheet = False
+                  self.script = False
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == "html" and attrs.get("lang") == "ru": self.html_lang = True
+                  if tag == "h1": self.heading = True
+                  if tag == "link" and attrs.get("href") == "./style.css": self.stylesheet = True
+                  if tag == "script" and attrs.get("src") == "./script.js": self.script = True
+              def handle_endtag(self, tag):
+                  if tag == "title": self.title = True
+
+          parser = SiteCheck()
+          parser.feed(Path("public/index.html").read_text(encoding="utf-8"))
+          assert parser.html_lang, "Missing Russian language declaration"
+          assert parser.heading, "Missing page heading"
+          assert parser.stylesheet, "Stylesheet link is missing"
+          assert parser.script, "JavaScript link is missing"
+          print("Static site structure checks passed")
+          PY
+      - name: Сохранить public как Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+  deploy:
+    name: Публикация на GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: ci
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Настроить GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Опубликовать сайт
+        id: deployment
+        uses: actions/deploy-pages@v4
