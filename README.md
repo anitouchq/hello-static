@@ -4,19 +4,19 @@
 
 Авторский сайт о городских прогулках на чистых HTML, CSS и JavaScript. GitHub Actions проверяет структуру сайта и JavaScript, затем публикует содержимое каталога `public/` на GitHub Pages.
 
-## Скриншоты
+## 📸 Скриншоты
 
-### Сайт
+### 1. Открытый сайт на GitHub Pages
 
-![Главная страница сайта](screenshots/website.png)
+![Открытый сайт на GitHub Pages](screenshots/website.png)
 
-### Успешный запуск GitHub Actions
+### 2. GitHub Actions — успешный деплой
 
-![Успешный запуск CI/CD](screenshots/github-actions.png)
+![GitHub Actions — успешный деплой](screenshots/github-actions.png)
 
-### Настройки GitHub Pages
+### 3. Настройки Pages (Source: GitHub Actions)
 
-![GitHub Pages с источником GitHub Actions](screenshots/github-pages-settings.png)
+![Настройки GitHub Pages с источником GitHub Actions](screenshots/github-pages-settings.png)
 
 ## Сайт
 
